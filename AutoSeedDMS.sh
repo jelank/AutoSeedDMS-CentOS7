@@ -1,16 +1,8 @@
 #!/bin/bash
-#CT aka PrototypeActual
+#author: PrototypeActual
+#edited: JeLank
 #SeedDMS 5.1.9
-#December 10th 2019
-
-echo "User/Administrator be advised,
-This script deploys SeedDMS only and will need a Database Server with a database table, user and the user permission granted to fully complete the last section of this SeedDMS installation."
-
-sleep 10
-
-echo "Here we go!"
-
-sleep 3
+#February 6th 2020
 
 #This section updates the machine and installs the prerequisites for SeedDMS
 
@@ -18,13 +10,43 @@ yum update -y
 
 yum install -y epel-release
 
-yum install -y httpd wget php php-mysql php-pear php-gd php-mbstring php-pdo php-pear-Log php-ZendFramework-Search-Lucene php-pear-Image-Text
+yum install -y httpd wget php php-mysql php-pear php-gd php-mbstring php-pdo php-pear-Log php-ZendFramework-Search-Lucene php-pear-Image-Text mariadb-server firewalld
+
+#This section enables the firewall and ensures it starts on reboot/start up
+
+systemctl enable firewalld
+
+systemctl start firewalld
 
 #This starts Apache and ensures it starts on reboot/start up of the server
 
 systemctl enable httpd
 
 systemctl start httpd
+
+#This starts MariaDB and ensures it starts on reboot/start up of the server
+
+systemctl enable mariadb
+
+systemctl start mariadb
+
+#This section will set up MariaDB
+
+mysql -u root <<-EOF
+UPDATE mysql.user SET Password=PASSWORD('Put your password here') WHERE User='root';
+DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+DELETE FROM mysql.user WHERE User='';
+DELETE FROM mysql.db WHERE Db='test' OR Db='test_%';
+FLUSH PRIVILEGES;
+EOF
+
+#This section will set up MariaDB database and user for SeedDMS
+
+mysql -u root -pFullsail1!   << EOF
+CREATE USER 'Your Username Here' IDENTIFIED BY 'Your password here!';
+CREATE DATABASE seeddms;
+GRANT ALL PRIVILEGES ON seeddms.* TO 'Your Username Here'@'localhost' IDENTIFIED BY 'Your Password Here!';
+EOF
 
 #This section makes a temporary folder in the current user home directory this script runs under and then downloads the SeedDMS packages
 
@@ -106,6 +128,6 @@ echo "After successfully getting past the installation page and the ENABLE_INSTA
 
 echo "-----------------------------------------"
 
-echo "The default login should be admin for username and the password"
+echo "The default login should be 'admin' for username and the 'admin' for the password"
 
 rm -rf ~/temp
