@@ -42,7 +42,7 @@ EOF
 
 #This section will set up MariaDB database and user for SeedDMS
 
-mysql -u root -pFullsail1!   << EOF
+mysql -u root -p(put your password here)   << EOF
 CREATE USER 'Your Username Here' IDENTIFIED BY 'Your password here!';
 CREATE DATABASE seeddms;
 GRANT ALL PRIVILEGES ON seeddms.* TO 'Your Username Here'@'localhost' IDENTIFIED BY 'Your Password Here!';
